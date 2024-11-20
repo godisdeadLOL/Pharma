@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class TableController : MonoBehaviour
 {
+    public float ElevationOffset { get; set; }
+
     [SerializeField]
     private LayerMask _tableLayer;
 
@@ -16,63 +18,70 @@ public class TableController : MonoBehaviour
     [SerializeField]
     private float _positionLerp = 10f;
 
-
     private Rigidbody _picked = null;
-    private Vector3 _target;
+    private Interactable _interactable = null;
 
-    public Transform pivot;
+    private Vector3 _target;
 
     void Update()
     {
         float interactionDistance = CameraManager._inst.CurrentArea.InteractionDistance;
 
-        if (Input.GetMouseButtonDown(0))
+        // поднятие/опускание предмета
+        if (Input.GetMouseButtonDown(0) && _picked == null)
         {
-            if (_picked == null)
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+            if (Physics.Raycast(ray, out RaycastHit hit, interactionDistance, _pickableLayer))
             {
+                _picked = hit.rigidbody;
+                _picked.isKinematic = true;
 
-                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-
-                if (Physics.Raycast(ray, out RaycastHit hit, interactionDistance, _pickableLayer))
-                {
-                    _picked = hit.rigidbody;
-                    _picked.isKinematic = true;
-
-                    Pick(_picked.gameObject);
-                }
-            }
-            else
-            {
-                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-
-                if (Physics.Raycast(ray, out RaycastHit hit, interactionDistance, _pickableLayer))
-                {
-                    Interactable interactable = hit.rigidbody.gameObject.GetComponent<Interactable>();
-
-                    if(interactable != null && interactable.gameObject != _picked)
-                    {
-                        interactable.Interact(_picked.gameObject);
-                    }
-                }
-                else
-                {
-
-                    Drop(_picked.gameObject);
-
-                    _picked.isKinematic = false;
-                    _picked = null;
-                }
+                Pick(_picked.gameObject);
             }
 
         }
 
+        if (Input.GetMouseButtonDown(1) && _picked != null)
+        {
+            Drop(_picked.gameObject);
 
+            _picked.isKinematic = false;
+            _picked = null;
+        }
+
+        // взаимодействия
+
+        if (_interactable != null)
+        {
+            if (Input.GetMouseButtonDown(0))
+            {
+                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+                // взаимодействие с другим предметом
+                if (Physics.Raycast(ray, out RaycastHit hit, interactionDistance, _pickableLayer))
+                {
+                    if (hit.collider.gameObject != _picked.gameObject) _interactable.Interact(hit.collider.gameObject);
+                }
+                else // самовзаимодействие
+                {
+                    _interactable.Hold();
+                }
+            }
+            else if (Input.GetMouseButtonUp(0))
+            {
+                _interactable.Release();
+            }
+        }
+
+
+        // движение предмета за курсором
         if (_picked != null)
         {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
             if (Physics.Raycast(ray, out RaycastHit hit, interactionDistance, _tableLayer))
-                _target = hit.point + Vector3.up * _elevate;
+                _target = hit.point + Vector3.up * (_elevate+ElevationOffset);
 
             _picked.MovePosition(Vector3.Lerp(_picked.position, _target, Time.fixedDeltaTime * _positionLerp));
         }
@@ -91,11 +100,11 @@ public class TableController : MonoBehaviour
         CameraManager._inst.ResetPivot();
         CameraManager._inst.CanPickArea = _picked == null;
 
-        if(_picked != null) Pick(_picked.gameObject);
+        if (_picked != null) Pick(_picked.gameObject);
     }
     void OnDisable()
     {
-        if(_picked != null) Drop(_picked.gameObject);
+        if (_picked != null) Drop(_picked.gameObject);
     }
 
     private void Pick(GameObject pickable)
@@ -106,6 +115,8 @@ public class TableController : MonoBehaviour
 
         if (actions != null)
             ActionManager._inst.Display(pickable, actions.profile);
+
+        _interactable = pickable.GetComponent<Interactable>();
     }
 
     private void Drop(GameObject pickable)
@@ -113,5 +124,7 @@ public class TableController : MonoBehaviour
         CameraManager._inst.CanPickArea = true;
 
         ActionManager._inst.Hide();
+
+        _interactable = null;
     }
 }

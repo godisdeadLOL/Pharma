@@ -4,9 +4,8 @@ using UnityEngine;
 
 public abstract class Interactable : MonoBehaviour
 {
-    public abstract void Interact(GameObject pickable);
-    public virtual bool CanInteract(GameObject pickable)
-    {
-        return false;
-    }
+    public virtual void Interact(GameObject pickable) {}
+
+    public virtual void Hold() { }
+    public virtual void Release() { }
 }

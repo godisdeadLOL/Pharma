@@ -34,7 +34,7 @@ public class CameraManager : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetMouseButton(1))
+        if (Input.GetMouseButton(3))
         {
             _rotateX += Input.GetAxis("Mouse Y") * _moveSensitivity;
             _rotateY -= Input.GetAxis("Mouse X") * _moveSensitivity;

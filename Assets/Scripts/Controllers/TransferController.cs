@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class TransferController : MonoBehaviour
 {
+    // todo: рефакторинг в соответствии с изменениями interactable
+
     [HideInInspector]
     public GameObject interactable;
 

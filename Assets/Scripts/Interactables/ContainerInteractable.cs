@@ -9,10 +9,12 @@ public class ContainerInteractable : Interactable
         //transform
         //pickable.transform
 
+        if (pickable.GetComponent<Container>() == null) return;
+
         var transferController = StateManager._inst.GetState<TransferController>();
 
-        transferController.pickable = pickable;
-        transferController.interactable = transform.gameObject;
+        transferController.pickable = transform.gameObject;
+        transferController.interactable = pickable;
 
         StateManager._inst.ChangeState<TransferController>();
     }
