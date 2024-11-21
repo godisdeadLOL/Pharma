@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class ExamineAction : Action
 {
+    public override string Name => "Осмотреть";
 
     public override void Activate(GameObject pickable)
     {

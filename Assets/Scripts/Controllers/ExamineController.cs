@@ -11,6 +11,8 @@ public class ExamineController : MonoBehaviour
 
     public GameObject pickable;
 
+    private bool _tempKinematic;
+
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.Escape)) StateManager._inst.ChangeState<TableController>();
@@ -18,6 +20,10 @@ public class ExamineController : MonoBehaviour
 
     void OnEnable()
     {
+        Rigidbody _rb = pickable.GetComponent<Rigidbody>();
+        _tempKinematic = _rb.isKinematic;
+        _rb.isKinematic = true;
+
         _oldPosition = pickable.transform.position;
         pickable.transform.position = _pivot.position;
 
@@ -29,6 +35,9 @@ public class ExamineController : MonoBehaviour
     {
         if (pickable != null)
         {
+            Rigidbody _rb = pickable.GetComponent<Rigidbody>();
+            _rb.isKinematic = _tempKinematic;
+
             pickable.transform.position = _oldPosition;
             pickable = null;
         }
