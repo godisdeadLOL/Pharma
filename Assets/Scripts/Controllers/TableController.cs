@@ -28,7 +28,7 @@ public class TableController : MonoBehaviour
         float interactionDistance = CameraManager._inst.CurrentArea.InteractionDistance;
 
         // поднятие/опускание предмета
-        if (Input.GetMouseButtonDown(0) && _picked == null)
+        if (InputHandler.GetMouseButtonDown(0) && _picked == null)
         {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
@@ -42,7 +42,7 @@ public class TableController : MonoBehaviour
 
         }
 
-        if (Input.GetMouseButtonDown(1) && _picked != null)
+        if (InputHandler.GetMouseButtonDown(1) && _picked != null)
         {
             Drop(_picked.gameObject);
 
@@ -54,21 +54,21 @@ public class TableController : MonoBehaviour
 
         if (_interactable != null)
         {
-            if (Input.GetMouseButtonDown(0))
+            if (InputHandler.GetMouseButtonDown(0))
             {
                 Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
                 // взаимодействие с другим предметом
                 if (Physics.Raycast(ray, out RaycastHit hit, interactionDistance, _pickableLayer))
                 {
-                    if (hit.collider.gameObject != _picked.gameObject) _interactable.Interact(hit.collider.gameObject);
+                    if (hit.rigidbody.gameObject != _picked.gameObject) _interactable.Interact(hit.rigidbody.gameObject);
                 }
                 else // самовзаимодействие
                 {
                     _interactable.Hold();
                 }
             }
-            else if (Input.GetMouseButtonUp(0))
+            else if (InputHandler.GetMouseButtonUp(0))
             {
                 _interactable.Release();
             }

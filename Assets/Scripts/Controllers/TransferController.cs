@@ -47,7 +47,7 @@ public class TransferController : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Escape))
+        if (InputHandler.GetMouseButtonDown(1))
         {
             StateManager._inst.ChangeState<TableController>();
             return;
@@ -57,7 +57,7 @@ public class TransferController : MonoBehaviour
         Vector3 targetPosition = interactable.transform.position + Vector3.right * _sideOffset;
         Quaternion targetRotation = Quaternion.identity;
 
-        if (Input.GetMouseButton(0))
+        if (InputHandler.GetMouseButton(0))
         {
             targetPosition += Vector3.up * _vertOffset;
             targetRotation = Quaternion.AngleAxis(_leanAngle, Vector3.forward);
@@ -67,12 +67,12 @@ public class TransferController : MonoBehaviour
         pickable.transform.rotation = Quaternion.Lerp(pickable.transform.rotation, targetRotation, Time.deltaTime * _rotationLerp);
 
         // transfer
-        if (Input.GetMouseButtonDown(0))
+        if (InputHandler.GetMouseButtonDown(0))
         {
             _timer = -_transferDelay;
         }
 
-        if (Input.GetMouseButton(0))
+        if (InputHandler.GetMouseButton(0))
         {
             _timer += Time.deltaTime;
 

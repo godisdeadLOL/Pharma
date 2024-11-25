@@ -38,7 +38,7 @@ public class CameraManager : MonoBehaviour
 
     [SerializeField] private float _transitionLerpMult = 0.5f;
     [SerializeField] private float _transitionTime = 1f;
-    
+
     private float _transitionTimer;
 
     void Awake()
@@ -57,7 +57,7 @@ public class CameraManager : MonoBehaviour
     {
         _transitionTimer -= Time.deltaTime;
 
-        if (Input.GetMouseButton(2))
+        if (InputHandler.GetMouseButton(2))
         {
             _cameraX -= Input.GetAxis("Mouse X") * _moveSensitivity * Time.deltaTime;
             _cameraY += Input.GetAxis("Mouse Y") * _moveSensitivity * Time.deltaTime;
@@ -78,16 +78,19 @@ public class CameraManager : MonoBehaviour
         }
 
         // интерполяция
-        float positionLerp = _transitionTimer < 0 ? _positionLerp : _positionLerp*_transitionLerpMult;
-        float rotationLerp = _transitionTimer < 0 ? _rotationLerp : _rotationLerp*_transitionLerpMult;
+        float positionLerp = _transitionTimer < 0 ? _positionLerp : _positionLerp * _transitionLerpMult;
+        float rotationLerp = _transitionTimer < 0 ? _rotationLerp : _rotationLerp * _transitionLerpMult;
 
-        _camera.position = Vector3.Lerp(_camera.position, _target.position, Time.deltaTime * positionLerp);
+        if (_cameraMode == CameraMode.Orbit && _transitionTimer < 0f)
+            _camera.position = Vector3.Slerp(_camera.position, _target.position, Time.deltaTime * positionLerp);
+        else
+            _camera.position = Vector3.Lerp(_camera.position, _target.position, Time.deltaTime * positionLerp);
 
         // _camera.position = _cameraMode == CameraMode.Orbit ? Vector3.Slerp(_camera.position, _target.position, Time.deltaTime * positionLerp) : Vector3.Lerp(_camera.position, _target.position, Time.deltaTime * positionLerp);
         _camera.rotation = Quaternion.Lerp(_camera.rotation, _target.rotation, Time.deltaTime * rotationLerp);
 
         // выбор области
-        if (CanPickArea && Input.GetMouseButtonDown(0))
+        if (CanPickArea && InputHandler.GetMouseButtonDown(0))
         {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             if (!Physics.Raycast(ray, out RaycastHit hit, float.PositiveInfinity)) return;
@@ -127,6 +130,6 @@ public class CameraManager : MonoBehaviour
 
     public void ResetPivot()
     {
-        CurrentPivot = CurrentArea.Pivot;
+        SetPivot(CurrentArea.Pivot);
     }
 }

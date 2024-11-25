@@ -13,5 +13,5 @@ MonoBehaviour:
   m_Name: Salt
   m_EditorClassIdentifier: 
   name: "\u0421\u043E\u043B\u044C"
-  density: 1
+  density: 0.02
   color: {r: 1, g: 1, b: 1, a: 0}

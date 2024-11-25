@@ -13,5 +13,5 @@ MonoBehaviour:
   m_Name: Coal
   m_EditorClassIdentifier: 
   name: "\u0423\u0433\u043E\u043B\u044C"
-  density: 1
+  density: 0.02
   color: {r: 0.2235294, g: 1, b: 0.29337484, a: 0}

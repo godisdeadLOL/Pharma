@@ -15,7 +15,7 @@ public class ExamineController : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Escape)) StateManager._inst.ChangeState<TableController>();
+        if (InputHandler.GetMouseButtonDown(1)) StateManager._inst.ChangeState<TableController>();
     }
 
     void OnEnable()

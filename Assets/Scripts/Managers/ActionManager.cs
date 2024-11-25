@@ -43,12 +43,12 @@ public class ActionManager : MonoBehaviour
         //     }
         // }
 
-        if (Input.GetMouseButtonDown(1))
+        if (InputHandler.GetMouseButtonDown(1))
         {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             if (!Physics.Raycast(ray, out RaycastHit hit, interactionDistance, _pickableLayer)) return;
 
-            Actions actions = hit.collider.gameObject.GetComponent<Actions>();
+            Actions actions = hit.rigidbody.gameObject.GetComponent<Actions>();
             if (actions == null) return;
 
             _contextMenu.gameObject.SetActive(true);
