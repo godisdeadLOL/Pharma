@@ -1,134 +1,119 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class TableController : MonoBehaviour
 {
-    public float ElevationOffset { get; set; }
 
-    [SerializeField]
-    private LayerMask _tableLayer;
+    [SerializeField] private float _elevation = 0.1f;
 
-    [SerializeField]
-    private LayerMask _pickableLayer;
+    private LayerMask _interactableMask, _pickableColliderMask, _tableMask;
 
-    [SerializeField]
-    private float _elevate = 0.5f;
+    private Pickable _pickable;
+    private Vector3 _targetPosition;
+    private Vector3 _realTargetPosition;
 
-    [SerializeField]
-    private float _positionLerp = 10f;
-
-    private Rigidbody _picked = null;
-    private Interactable _interactable = null;
-
-    private Vector3 _target;
+    void Awake()
+    {
+        _interactableMask = LayerMask.GetMask("Pickable", "Button", "Extra");
+        _pickableColliderMask = LayerMask.GetMask("PickableCollider");
+        _tableMask = LayerMask.GetMask("Surface");
+    }
 
     void Update()
     {
-        // float interactionDistance = CameraManager._inst.InteractionDistance;
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            StateManager._inst.GetState<MovementController>().ExitTarget();
+            return;
+        }
 
-        // // поднятие/опускание предмета
-        // if (InputHandler.GetMouseButtonDown(0) && _picked == null)
-        // {
-        //     Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        if (_pickable == null) return;
 
-        //     if (Physics.Raycast(ray, out RaycastHit hit, interactionDistance, _pickableLayer))
-        //     {
-        //         _picked = hit.rigidbody;
-        //         _picked.isKinematic = true;
+        // 
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        float interactionDistance = InteractionManager.Inst.InteractionDistance;
 
-        //         Pick(_picked.gameObject);
-        //     }
+        if (Physics.Raycast(ray, out RaycastHit hit, interactionDistance, _tableMask))
+        {
+            _realTargetPosition = hit.point;
 
-        // }
+            // bool up = Mathf.Approximately(Vector3.Dot(hit.normal, Vector3.up), 0f);
 
-        // if (InputHandler.GetMouseButtonDown(1) && _picked != null)
-        // {
-        //     Drop(_picked.gameObject);
+            float radius = _pickable.Collider.radius * _pickable.Collider.transform.localScale.x;
 
-        //     _picked.isKinematic = false;
-        //     _picked = null;
-        // }
-
-        // // взаимодействия
-
-        // if (_interactable != null)
-        // {
-        //     if (InputHandler.GetMouseButtonDown(0))
-        //     {
-        //         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-
-        //         // взаимодействие с другим предметом
-        //         if (Physics.Raycast(ray, out RaycastHit hit, interactionDistance, _pickableLayer))
-        //         {
-        //             if (hit.rigidbody.gameObject != _picked.gameObject) _interactable.Interact(hit.rigidbody.gameObject);
-        //         }
-        //         else // самовзаимодействие
-        //         {
-        //             _interactable.Hold();
-        //         }
-        //     }
-        //     else if (InputHandler.GetMouseButtonUp(0))
-        //     {
-        //         _interactable.Release();
-        //     }
-        // }
-
-
-        // // движение предмета за курсором
-        // if (_picked != null)
-        // {
-        //     Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-
-        //     if (Physics.Raycast(ray, out RaycastHit hit, interactionDistance, _tableLayer))
-        //         _target = hit.point + Vector3.up * (_elevate+ElevationOffset);
-
-        //     _picked.MovePosition(Vector3.Lerp(_picked.position, _target, Time.fixedDeltaTime * _positionLerp));
-        // }
-
+            Collider[] buffer = new Collider[1];
+            if (Physics.OverlapSphereNonAlloc(hit.point, radius, buffer, _pickableColliderMask) == 0)
+            {
+                _targetPosition = hit.point;
+            }
+        }
 
         //
-        if(Input.GetKeyDown(KeyCode.Escape)) StateManager._inst.GetState<MovementController>().ExitTarget();
-    }
+        _pickable.transform.position = Lerping.Lerp(
+            _pickable.transform.position,
+            Vector3.Lerp(_targetPosition, _realTargetPosition, 0.1f) + Vector3.up * _elevation,
+            Lerping.Smooth.Fast
+        );
 
-    void FixedUpdate()
-    {
-        if (_picked != null)
-        {
-            _picked.MovePosition(Vector3.Lerp(_picked.position, _target, Time.fixedDeltaTime * _positionLerp));
-        }
+        //
+        if (InputHandler.GetMouseButtonDown(1)) Drop();
     }
 
     void OnEnable()
     {
-        // CameraManager._inst.ResetPivot();
-        // CameraManager._inst.CanPickArea = _picked == null;
+        InteractionManager.Inst.PushLayer(InteractionLayer.Pickable);
+        InteractionManager.Inst.PushLayer(InteractionLayer.Button);
+        InteractionManager.Inst.PushLayer(InteractionLayer.Extra);
 
-        if (_picked != null) Pick(_picked.gameObject);
+        InteractionManager.Inst.RaycastMask = _interactableMask;
+
+        InteractionManager.Inst.OnInteractPrimary += OnInteractPrimary;
     }
     void OnDisable()
     {
-        if (_picked != null) Drop(_picked.gameObject);
+        InteractionManager.Inst.ClearLayers();
+
+        InteractionManager.Inst.OnInteractPrimary -= OnInteractPrimary;
     }
 
-    private void Pick(GameObject pickable)
+    private void OnInteractPrimary(Interactable interactable)
     {
-        // CameraManager._inst.CanPickArea = false;
+        if (interactable.Layer == InteractionLayer.Pickable)
+        {
 
-        Actions actions = pickable.GetComponent<Actions>();
+            if (_pickable == null)
+            {
+                Pickable pickable = interactable.GetComponent<Pickable>();
+                Pick(pickable);
+            }
+            else
+            {
+                Pickable source = _pickable;
+                Pickable target = interactable.GetComponent<Pickable>();
 
-        if (actions != null)
-            ActionManager._inst.Display(pickable, actions.profile);
+                if(source == target) return;
 
-        _interactable = pickable.GetComponent<Interactable>();
+                source.OnInteract?.Invoke(target);
+                target.OnInteracted?.Invoke(source);
+            }
+        }
     }
 
-    private void Drop(GameObject pickable)
+    private void Pick(Pickable pickable)
     {
-        // CameraManager._inst.CanPickArea = true;
+        _pickable = pickable;
+        _targetPosition = pickable.transform.position;
+        pickable.OnPick?.Invoke();
 
-        ActionManager._inst.Hide();
 
-        _interactable = null;
+        InteractionManager.Inst.BlockSecondary = true;
+    }
+
+    private void Drop()
+    {
+        _pickable.OnDrop?.Invoke();
+        _pickable.transform.position = _targetPosition;
+        _pickable = null;
+
+        InteractionManager.Inst.BlockSecondary = false;
     }
 }

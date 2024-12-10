@@ -94,12 +94,20 @@ public class InteractionManager : MonoBehaviour
 
         if (Physics.Raycast(ray, out RaycastHit hit, InteractionDistance, RaycastMask)) // OnHoverEnter
         {
-            GameObject gameObject;
+            GameObject gameObject = hit.collider.gameObject;
 
-            if (hit.rigidbody != null) gameObject = hit.rigidbody.gameObject;
-            else gameObject = hit.collider.gameObject;
+            // if (hit.rigidbody != null) gameObject = hit.rigidbody.gameObject;
+            // else gameObject = hit.collider.gameObject;
 
-            if (gameObject.TryGetComponent<Interactable>(out var interactable) && interactable.CanInteract)
+            if (!gameObject.TryGetComponent<Interactable>(out var interactable))
+                interactable = gameObject.GetComponentInParent<Interactable>();
+
+            
+            if(_hovered == interactable) return;
+
+            // gameObject.TryGetComponent<Interactable>(out var interactable) && 
+
+            if (interactable != null && interactable.CanInteract)
             {
                 if (_hovered != null) //
                 {

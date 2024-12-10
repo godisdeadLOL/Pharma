@@ -34,7 +34,9 @@ public class Weighter : MonoBehaviour
 
     void OnTriggerStay(Collider collider)
     {
-        if (collider.attachedRigidbody.TryGetComponent<Pickable>(out var pickable))
+        GameObject gameObject = collider.attachedRigidbody.gameObject;
+
+        if (gameObject.TryGetComponent<Pickable>(out var pickable))
             _total += CalculatePickableMass(pickable);
     }
 
@@ -45,8 +47,14 @@ public class Weighter : MonoBehaviour
 
     private float CalculatePickableMass(Pickable pickable)
     {
-        if (!pickable.Picked) return 0.2f;
-        else return 0f;
+        if (pickable.Picked) return 0f;
+
+        float mass = pickable.Mass;
+
+        if (pickable.TryGetComponent<Container>(out var container))
+            mass += container.GetMass();
+
+        return mass;
     }
 
     private void UpdateDisplay()
@@ -56,7 +64,7 @@ public class Weighter : MonoBehaviour
 
     public void ResetWeight()
     {
-        if(!_on) return;
+        if (!_on) return;
 
         _offset = _total;
     }

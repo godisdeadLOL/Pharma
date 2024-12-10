@@ -28,6 +28,7 @@ public class MovementController : MonoBehaviour
     {
         InteractionManager.Inst.BlockSecondary = false;
         InteractionManager.Inst.ClearLayers();
+        InteractionManager.Inst.ClearInteractables();
 
         InteractionManager.Inst.OnInteractPrimary -= OnInteract;
     }

@@ -15,6 +15,7 @@ public class MortarVisualData : MonoBehaviour
     [field: SerializeField] public Transform TopPlane { get; private set; }
     [field: SerializeField] public Transform BottomPlane { get; private set; }
 
+    [field: SerializeField] public float PestleStart { get; private set; } = 0f;
     [field: SerializeField] public float PestleOffset { get; private set; } = 1f;
 
     [field: SerializeField] public float TopRadius { get; private set; } = 2f;
@@ -33,5 +34,9 @@ public class MortarVisualData : MonoBehaviour
         Handles.DrawWireArc(BottomPlane.transform.position, Vector3.up, BottomPlane.forward, 360, BottomRadius);
         Handles.DrawWireArc(TopPlane.transform.position, Vector3.up, Vector3.forward, 360, TopRadius);
         Handles.DrawWireArc(TopPlane.transform.position, Vector3.up, Vector3.forward, 360, ClampTopRadius);
+
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(TopPlane.transform.position + Vector3.down * PestleStart, 0.02f);
+        Gizmos.DrawWireSphere(TopPlane.transform.position + Vector3.down * (PestleStart+PestleOffset), 0.02f);
     }
 }

@@ -1,13 +1,22 @@
 using UnityEngine;
 using UnityEngine.Events;
 
+[RequireComponent(typeof(Interactable))]
 public class Pickable : MonoBehaviour
 {
     public UnityAction OnPick;
     public UnityAction OnDrop;
 
-    public SphereCollider Collider { get; private set; }
+    public UnityAction<Pickable> OnInteract;
+    public UnityAction<Pickable> OnInteracted;
 
+    // public UnityAction<Pickable> OnInteractStart;
+    // public UnityAction<Pickable> OnInteractHold;
+    // public UnityAction<Pickable> OnInteractEnd;
+
+    [field: SerializeField] public float Mass { get; set; } = 0.1f;
+
+    public SphereCollider Collider { get; private set; }
     public bool Picked { get; private set; }
 
     void Awake()
@@ -18,13 +27,13 @@ public class Pickable : MonoBehaviour
         OnDrop += () => Drop();
     }
 
-    void Pick()
+    private void Pick()
     {
         Picked = true;
         Collider.gameObject.SetActive(false);
     }
 
-    void Drop()
+    private void Drop()
     {
         Picked = false;
         Collider.gameObject.SetActive(true);

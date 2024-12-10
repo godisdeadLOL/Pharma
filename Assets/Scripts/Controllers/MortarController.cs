@@ -17,7 +17,7 @@ public class MortarController : MonoBehaviour
             return;
         }
 
-        Vector3 targetOffset = InputHandler.GetMouseButton(0) ? Vector3.forward * MortarVisual.PestleOffset : Vector3.zero;
+        Vector3 targetOffset = InputHandler.GetMouseButton(0) ? Vector3.forward * (MortarVisual.PestleOffset + MortarVisual.PestleStart) : Vector3.forward * MortarVisual.PestleStart;
         MortarVisual.PestleHandle.localPosition = Vector3.Lerp(MortarVisual.PestleHandle.localPosition, targetOffset, Time.deltaTime * 10f);
 
 
@@ -46,10 +46,7 @@ public class MortarController : MonoBehaviour
     {
         MortarVisual.InteractionPlane.enabled = true;
 
-        Pestle.GetComponent<Rigidbody>().interpolation = RigidbodyInterpolation.None;
-        MortarVisual.transform.GetComponent<Rigidbody>().isKinematic = true;
-
-        Pestle.SetParent(MortarVisual.PestleHandle);
+        Pestle.SetParent(MortarVisual.PestleHandle, false);
         Pestle.localPosition = Vector3.zero;
         Pestle.localRotation = Quaternion.identity;
     }
@@ -59,10 +56,7 @@ public class MortarController : MonoBehaviour
         if (MortarVisual == null) return;
 
         MortarVisual.InteractionPlane.enabled = false;
-
-        Pestle.GetComponent<Rigidbody>().interpolation = RigidbodyInterpolation.Interpolate;
-        MortarVisual.transform.GetComponent<Rigidbody>().isKinematic = false;
-
         Pestle.SetParent(null);
+        Pestle.localRotation = Quaternion.identity;
     }
 }

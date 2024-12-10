@@ -4,13 +4,10 @@ using UnityEngine;
 
 public class TransferController : MonoBehaviour
 {
-    // todo: рефакторинг в соответствии с изменениями interactable
 
-    [HideInInspector]
-    public GameObject interactable;
+    public Container Source { get; set; }
 
-    [HideInInspector]
-    public GameObject pickable;
+    public Container Target {get; set;}
 
     [Header("Procedural Animation")]
 
@@ -18,32 +15,20 @@ public class TransferController : MonoBehaviour
     [SerializeField]
     private float _sideOffset;
 
-    [SerializeField]
-    private float _vertOffset;
+    [SerializeField] private float _vertOffset;
 
-    [SerializeField]
-    private float _leanAngle;
+    [SerializeField] private float _leanAngle;
 
-    [SerializeField]
-    private float _positionLerp = 10f;
-
-    [SerializeField]
-    private float _rotationLerp = 10f;
 
     [Header("Transfer")]
 
-    [SerializeField]
-    private int _stepAmount = 5;
+    [SerializeField] private int _stepAmount = 5;
 
-    [SerializeField]
-    private float _stepTime = 0.2f;
+    [SerializeField] private float _stepTime = 0.2f;
 
-    [SerializeField]
-    private float _transferDelay = 0.4f;
+    [SerializeField] private float _transferDelay = 0.4f;
 
     private float _timer;
-
-    private Container _containerFrom, _containerTo;
 
     void Update()
     {
@@ -54,7 +39,7 @@ public class TransferController : MonoBehaviour
         }
 
         // анимация
-        Vector3 targetPosition = interactable.transform.position + Vector3.right * _sideOffset;
+        Vector3 targetPosition = Target.transform.position + Vector3.right * _sideOffset;
         Quaternion targetRotation = Quaternion.identity;
 
         if (InputHandler.GetMouseButton(0))
@@ -63,8 +48,8 @@ public class TransferController : MonoBehaviour
             targetRotation = Quaternion.AngleAxis(_leanAngle, Vector3.forward);
         }
 
-        pickable.transform.position = Vector3.Lerp(pickable.transform.position, targetPosition, Time.deltaTime * _positionLerp);
-        pickable.transform.rotation = Quaternion.Lerp(pickable.transform.rotation, targetRotation, Time.deltaTime * _rotationLerp);
+        Source.transform.position = Lerping.Lerp(Source.transform.position, targetPosition, Lerping.Smooth.Fast);
+        Source.transform.rotation = Lerping.Lerp(Source.transform.rotation, targetRotation, Lerping.Smooth.Fast);
 
         // transfer
         if (InputHandler.GetMouseButtonDown(0))
@@ -76,11 +61,11 @@ public class TransferController : MonoBehaviour
         {
             _timer += Time.deltaTime;
 
-            if(_timer > _stepTime)
+            if (_timer > _stepTime)
             {
                 _timer -= _stepTime;
 
-                _containerFrom.Transfer(_containerTo, _stepAmount);
+                Source.Transfer(Target, _stepAmount);
             }
         }
     }
@@ -91,19 +76,16 @@ public class TransferController : MonoBehaviour
         // CameraManager._inst.CanPickArea = false;
 
         _timer = -_transferDelay;
-
-        _containerFrom = pickable.GetComponent<Container>();
-        _containerTo = interactable.GetComponent<Container>();
     }
 
     void OnDisable()
     {
-        if (pickable != null)
+        if (Target != null)
         {
-            pickable.transform.rotation = Quaternion.identity;
+            Target.transform.rotation = Quaternion.identity;
 
-            pickable = null;
-            interactable = null;
+            Target = null;
+            Source = null;
         }
     }
 }

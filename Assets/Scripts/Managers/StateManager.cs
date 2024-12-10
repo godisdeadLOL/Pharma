@@ -1,10 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class StateManager : MonoBehaviour
 {
     public static StateManager _inst;
+
+    public UnityAction<MonoBehaviour> OnStateChange;
 
     void Awake()
     {
@@ -23,14 +26,18 @@ public class StateManager : MonoBehaviour
 
     public void ChangeState<T>() where T : MonoBehaviour
     {
-        GameObject target = GetComponentInChildren<T>(true).gameObject;
+        MonoBehaviour state = GetComponentInChildren<T>(true);
+        GameObject target = state.gameObject;
 
         for (int i = 0; i < transform.childCount; i++)
         {
             GameObject gameObject = transform.GetChild(i).gameObject;
-
-            gameObject.SetActive(gameObject == target);
+            if(gameObject.activeSelf) gameObject.SetActive(false);
         }
+
+        target.SetActive(true);
+
+        OnStateChange?.Invoke(state);
     }
 
     public void ChangeState(GameObject target)
@@ -38,9 +45,12 @@ public class StateManager : MonoBehaviour
         for (int i = 0; i < transform.childCount; i++)
         {
             GameObject gameObject = transform.GetChild(i).gameObject;
-
-            gameObject.SetActive(gameObject == target);
+            if(gameObject.activeSelf) gameObject.SetActive(false);
         }
+
+        target.SetActive(true);
+
+        OnStateChange?.Invoke(target.GetComponent<MonoBehaviour>());
     }
 
     public T GetState<T>() where T : MonoBehaviour

@@ -46,7 +46,7 @@ public class UiContextMenu : MonoBehaviour
 
             Button button = buttonTransform.GetComponent<Button>();
             button.GetComponentInChildren<TMP_Text>().text = profile[i].Name;
-            button.onClick.AddListener(() => action.Activate(pickable));
+            button.onClick.AddListener(() => { action.Activate(pickable); ActionManager._inst.Hide(); } );
         }
     }
 }

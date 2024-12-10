@@ -29,14 +29,14 @@ public class InventoryManager : MonoBehaviour
         Transform itemBox = GetEmptyBox();
         if(itemBox == null) return;
 
-        var rb = pickable.GetComponent<Rigidbody>();
+        // var rb = pickable.GetComponent<Rigidbody>();
 
-        if (rb != null)
-        {
-            rb.isKinematic = true;
-            rb.velocity = Vector3.zero;
-            rb.interpolation = RigidbodyInterpolation.None;
-        }
+        // if (rb != null)
+        // {
+        //     rb.isKinematic = true;
+        //     rb.velocity = Vector3.zero;
+        //     rb.interpolation = RigidbodyInterpolation.None;
+        // }
 
         pickable.transform.SetParent(itemBox, false);
         pickable.transform.localPosition = Vector3.zero;
@@ -51,16 +51,16 @@ public class InventoryManager : MonoBehaviour
         Ray ray = Camera.main.ScreenPointToRay(mousePosition);
         if (!Physics.Raycast(ray, out RaycastHit hit, interactionDistance)) return;
 
-        Vector3 target = hit.point + Vector3.up * 0.2f;
+        Vector3 target = hit.point;// + Vector3.up * 0.2f;
 
         GameObject pickable = _itemBoxes[slot].GetChild(0).gameObject;
-        var rb = pickable.GetComponent<Rigidbody>();
+        // var rb = pickable.GetComponent<Rigidbody>();
 
-        if (rb != null)
-        {
-            rb.isKinematic = false;
-            rb.interpolation = RigidbodyInterpolation.Interpolate;
-        }
+        // if (rb != null)
+        // {
+        //     rb.isKinematic = false;
+        //     rb.interpolation = RigidbodyInterpolation.Interpolate;
+        // }
 
         pickable.transform.SetParent(null, false);
         pickable.transform.position = target;
