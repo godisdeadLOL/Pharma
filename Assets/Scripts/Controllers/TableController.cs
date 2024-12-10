@@ -25,66 +25,66 @@ public class TableController : MonoBehaviour
 
     void Update()
     {
-        float interactionDistance = CameraManager._inst.InteractionDistance;
+        // float interactionDistance = CameraManager._inst.InteractionDistance;
 
-        // поднятие/опускание предмета
-        if (InputHandler.GetMouseButtonDown(0) && _picked == null)
-        {
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        // // поднятие/опускание предмета
+        // if (InputHandler.GetMouseButtonDown(0) && _picked == null)
+        // {
+        //     Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
-            if (Physics.Raycast(ray, out RaycastHit hit, interactionDistance, _pickableLayer))
-            {
-                _picked = hit.rigidbody;
-                _picked.isKinematic = true;
+        //     if (Physics.Raycast(ray, out RaycastHit hit, interactionDistance, _pickableLayer))
+        //     {
+        //         _picked = hit.rigidbody;
+        //         _picked.isKinematic = true;
 
-                Pick(_picked.gameObject);
-            }
+        //         Pick(_picked.gameObject);
+        //     }
 
-        }
+        // }
 
-        if (InputHandler.GetMouseButtonDown(1) && _picked != null)
-        {
-            Drop(_picked.gameObject);
+        // if (InputHandler.GetMouseButtonDown(1) && _picked != null)
+        // {
+        //     Drop(_picked.gameObject);
 
-            _picked.isKinematic = false;
-            _picked = null;
-        }
+        //     _picked.isKinematic = false;
+        //     _picked = null;
+        // }
 
-        // взаимодействия
+        // // взаимодействия
 
-        if (_interactable != null)
-        {
-            if (InputHandler.GetMouseButtonDown(0))
-            {
-                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        // if (_interactable != null)
+        // {
+        //     if (InputHandler.GetMouseButtonDown(0))
+        //     {
+        //         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
-                // взаимодействие с другим предметом
-                if (Physics.Raycast(ray, out RaycastHit hit, interactionDistance, _pickableLayer))
-                {
-                    if (hit.rigidbody.gameObject != _picked.gameObject) _interactable.Interact(hit.rigidbody.gameObject);
-                }
-                else // самовзаимодействие
-                {
-                    _interactable.Hold();
-                }
-            }
-            else if (InputHandler.GetMouseButtonUp(0))
-            {
-                _interactable.Release();
-            }
-        }
+        //         // взаимодействие с другим предметом
+        //         if (Physics.Raycast(ray, out RaycastHit hit, interactionDistance, _pickableLayer))
+        //         {
+        //             if (hit.rigidbody.gameObject != _picked.gameObject) _interactable.Interact(hit.rigidbody.gameObject);
+        //         }
+        //         else // самовзаимодействие
+        //         {
+        //             _interactable.Hold();
+        //         }
+        //     }
+        //     else if (InputHandler.GetMouseButtonUp(0))
+        //     {
+        //         _interactable.Release();
+        //     }
+        // }
 
 
-        // движение предмета за курсором
-        if (_picked != null)
-        {
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        // // движение предмета за курсором
+        // if (_picked != null)
+        // {
+        //     Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
-            if (Physics.Raycast(ray, out RaycastHit hit, interactionDistance, _tableLayer))
-                _target = hit.point + Vector3.up * (_elevate+ElevationOffset);
+        //     if (Physics.Raycast(ray, out RaycastHit hit, interactionDistance, _tableLayer))
+        //         _target = hit.point + Vector3.up * (_elevate+ElevationOffset);
 
-            _picked.MovePosition(Vector3.Lerp(_picked.position, _target, Time.fixedDeltaTime * _positionLerp));
-        }
+        //     _picked.MovePosition(Vector3.Lerp(_picked.position, _target, Time.fixedDeltaTime * _positionLerp));
+        // }
 
 
         //

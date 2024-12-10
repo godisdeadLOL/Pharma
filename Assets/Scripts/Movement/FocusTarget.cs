@@ -18,7 +18,7 @@ public class FocusTarget : MonoBehaviour
     void Awake()
     {
         _outline = GetComponent<Outline>();
-        SetActive(false);
+        // SetActive(false);
     }
 
     public void SetActive(bool active)

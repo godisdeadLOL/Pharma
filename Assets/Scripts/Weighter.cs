@@ -8,12 +8,23 @@ public class Weighter : MonoBehaviour
     [SerializeField] private TMP_Text _text;
 
     private float _total = 0f;
-
     private float _offset = 0f;
+
+    private bool _on = false;
+
+    private GameObject _weighterTrigger;
+
+    void Awake()
+    {
+        _weighterTrigger = transform.Find("WeighterTrigger").gameObject;
+    }
 
     void Start()
     {
         UpdateDisplay();
+
+        _on = true;
+        Toggle();
     }
 
     void FixedUpdate()
@@ -23,33 +34,37 @@ public class Weighter : MonoBehaviour
 
     void OnTriggerStay(Collider collider)
     {
-        _total += CalculatePickableMass(collider.attachedRigidbody.gameObject);
+        if (collider.attachedRigidbody.TryGetComponent<Pickable>(out var pickable))
+            _total += CalculatePickableMass(pickable);
     }
 
     void Update()
     {
-        UpdateDisplay();
+        if (_on) UpdateDisplay();
     }
 
-    private float CalculatePickableMass(GameObject pickable)
+    private float CalculatePickableMass(Pickable pickable)
     {
-        float total = 0.2f;
-
-        var container = pickable.GetComponent<Container>();
-        if(container == null) return total;
-
-        total += container.GetMass();
-
-        return total;
+        if (!pickable.Picked) return 0.2f;
+        else return 0f;
     }
 
     private void UpdateDisplay()
     {
-        _text.text = $"{_total-_offset} кг";
+        _text.text = $"{_total - _offset} кг";
     }
 
     public void ResetWeight()
     {
+        if(!_on) return;
+
         _offset = _total;
+    }
+    public void Toggle()
+    {
+        _on = !_on;
+
+        _text.gameObject.SetActive(_on);
+        _weighterTrigger.SetActive(_on);
     }
 }

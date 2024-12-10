@@ -15,54 +15,45 @@ public class MovementController : MonoBehaviour
         ApproachPoint(CurrentPoint);
     }
 
-    void Update()
+    void OnEnable()
     {
-        if (InputHandler.GetMouseButtonDown(0))
+        InteractionManager.Inst.InteractionDistance = float.PositiveInfinity;
+        InteractionManager.Inst.BlockSecondary = true;
+        InteractionManager.Inst.PushLayer(InteractionLayer.MovePoint);
+        InteractionManager.Inst.RaycastMask = LayerMask.GetMask("MovePoint", "FocusTarget");
+
+        InteractionManager.Inst.OnInteractPrimary += OnInteract;
+    }
+    void OnDisable()
+    {
+        InteractionManager.Inst.BlockSecondary = false;
+        InteractionManager.Inst.ClearLayers();
+
+        InteractionManager.Inst.OnInteractPrimary -= OnInteract;
+    }
+
+    private void OnInteract(Interactable interactable)
+    {
+        if (interactable.Layer == InteractionLayer.MovePoint)
         {
-            if (CheckPointClick()) return;
-            if (CheckTargetClick()) return;
+            MovementPoint point = interactable.GetComponent<MovementPoint>();
+
+            LeavePoint();
+            ApproachPoint(point);
         }
-
-        // if (Input.GetKeyDown(KeyCode.Space) && CurrentArea.State != null)
-        // {
-        //     EnterArea();
-        // }
-    }
-
-    private bool CheckPointClick()
-    {
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        if (!Physics.Raycast(ray, out RaycastHit hit, float.PositiveInfinity, _pointLayer)) return false;
-
-        var point = hit.collider.GetComponent<MovementPoint>();
-        if (point == null) return false;
-
-        LeavePoint();
-        ApproachPoint(point);
-
-        return true;
-    }
-    private bool CheckTargetClick()
-    {
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        if (!Physics.Raycast(ray, out RaycastHit hit, float.PositiveInfinity, _targetLayer)) return false;
-
-        var focusTarget = hit.collider.GetComponentInParent<FocusTarget>();
-        if (focusTarget == null) return false;
-
-        EnterTarget(focusTarget);
-
-        return true;
+        else if(interactable.Layer == InteractionLayer.FocusTarget)
+        {
+            FocusTarget target = interactable.GetComponent<FocusTarget>();
+            
+            EnterTarget(target);
+        }
     }
 
     private void LeavePoint()
     {
         CurrentPoint.gameObject.SetActive(true);
 
-        foreach (var target in CurrentPoint.Targets)
-        {
-            target.SetActive(false);
-        }
+        InteractionManager.Inst.ClearInteractables();
     }
     private void ApproachPoint(MovementPoint next)
     {
@@ -71,19 +62,17 @@ public class MovementController : MonoBehaviour
 
         CameraManager._inst.CurrentPivot = CurrentPoint.transform;
 
-        foreach (var target in CurrentPoint.Targets)
+        foreach (var interactable in CurrentPoint.Interactables)
         {
-            target.SetActive(true);
+            InteractionManager.Inst.PushInteractable(interactable);
         }
-
-        // CameraManager._inst.CanRotate = true;
     }
 
     private void EnterTarget(FocusTarget next)
     {
         CurrentTarget = next;
 
-        foreach (var target in CurrentPoint.Targets) target.SetActive(false);
+        // foreach (var target in CurrentPoint.Targets) target.SetActive(false);
 
         CameraManager._inst.CanRotate = false;
         CameraManager._inst.CurrentPivot = next.Pivot;
@@ -96,10 +85,8 @@ public class MovementController : MonoBehaviour
 
     public void ExitTarget()
     {
-        foreach (var focusTarget in CurrentPoint.Targets) focusTarget.SetActive(true);
-
         CurrentTarget.OnExit.Invoke();
-        
+
         StateManager._inst.ChangeState<MovementController>();
         CameraManager._inst.CanRotate = true;
         ApproachPoint(CurrentPoint);

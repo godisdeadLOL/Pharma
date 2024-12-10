@@ -12,21 +12,21 @@ TagManager:
   - Water
   - UI
   - Pickable
-  - Area
-  - Dust
+  - MovePoint
+  - FocusTarget
+  - Extra
+  - Button
+  - 
+  - 
+  - 
+  - 
+  - 
+  - PickableCollider
+  - Surface
+  - 
+  - 
+  - 
   - Weighter
-  - Focus
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
   - 
   - 
   - 

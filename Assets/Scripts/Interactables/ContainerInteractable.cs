@@ -4,18 +4,18 @@ using UnityEngine;
 
 public class ContainerInteractable : Interactable
 {
-    public override void Interact(GameObject pickable)
-    {
-        //transform
-        //pickable.transform
+    // public override void Interact(GameObject pickable)
+    // {
+    //     //transform
+    //     //pickable.transform
 
-        if (pickable.GetComponent<Container>() == null) return;
+    //     if (pickable.GetComponent<Container>() == null) return;
 
-        var transferController = StateManager._inst.GetState<TransferController>();
+    //     var transferController = StateManager._inst.GetState<TransferController>();
 
-        transferController.pickable = transform.gameObject;
-        transferController.interactable = pickable;
+    //     transferController.pickable = transform.gameObject;
+    //     transferController.interactable = pickable;
 
-        StateManager._inst.ChangeState<TransferController>();
-    }
+    //     StateManager._inst.ChangeState<TransferController>();
+    // }
 }
