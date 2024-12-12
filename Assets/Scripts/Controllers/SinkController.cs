@@ -15,21 +15,6 @@ public class SinkController : MonoBehaviour
     private float distance = 0.025f;
     private float timer = 0;
 
-    void OnEnable()
-    {
-        InteractionManager.Inst.PushInteractable(_vavle);
-        InteractionManager.Inst.RaycastMask = LayerMask.GetMask("Default");
-
-        InteractionManager.Inst.OnInteractPrimary += InteractPrimary;
-    }
-
-    void OnDisable()
-    {
-        InteractionManager.Inst.ClearInteractables();
-
-        InteractionManager.Inst.OnInteractPrimary -= InteractPrimary;
-    }
-
     void Update()
     {
         Transform left = LeftArm.transform;
@@ -52,6 +37,21 @@ public class SinkController : MonoBehaviour
             RightArm.SetActive(false);
         }
 
+    }
+
+    void OnEnable()
+    {
+        InteractionManager.Inst.PushInteractable(_vavle);
+        InteractionManager.Inst.RaycastMask = LayerMask.GetMask("Extra");
+
+        InteractionManager.Inst.OnInteractPrimary += InteractPrimary;
+    }
+
+    void OnDisable()
+    {
+        InteractionManager.Inst.ClearInteractables();
+
+        InteractionManager.Inst.OnInteractPrimary -= InteractPrimary;
     }
 
     private void InteractPrimary(Interactable interactable)

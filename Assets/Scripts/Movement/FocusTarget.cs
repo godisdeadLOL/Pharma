@@ -25,12 +25,12 @@ public class FocusTarget : MonoBehaviour
     {
         if (active)
         {
-            _outline.enabled = true;
+            // _outline.enabled = true;
             _focusCollider.enabled = true;
         }
         else
         {
-            _outline.enabled = false;
+            // _outline.enabled = false;
             _focusCollider.enabled = false;
         }
     }
