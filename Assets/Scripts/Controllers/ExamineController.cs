@@ -19,10 +19,26 @@ public class ExamineController : MonoBehaviour
 
         if (InputHandler.GetMouseButton(0))
         {
-            _rotationY += Input.GetAxis("Mouse X") * Time.deltaTime * 500f;
-            _rotationX += Input.GetAxis("Mouse Y") * Time.deltaTime * 500f;
+            // _rotationY += Input.GetAxis("Mouse Y") * Time.deltaTime * 500f;
+            // _rotationX += Input.GetAxis("Mouse X") * Time.deltaTime * 500f;
 
-            Target.rotation = Quaternion.Euler(_rotationX, _rotationY, 0f);
+            float rotX = Input.GetAxis("Mouse X") * Time.deltaTime * 500f;
+            float rotY = Input.GetAxis("Mouse Y") * Time.deltaTime * 500f;
+
+            var camera = Camera.main.transform;
+            // Target.Rotate(Target.up, rotX);
+
+            // Target.Rotate(0, rotX, 0);
+            // Target.Rotate(camera.right, rotY);
+
+            Target.Rotate(Vector3.up, rotX, Space.Self);
+            Target.Rotate(camera.right, rotY, Space.World);
+
+
+            // Target.Rotate(camera.right, rotY);
+
+            // 
+            // Target.rotation = Quaternion.AngleAxis(_rotationY, camera.right)*Quaternion.AngleAxis(_rotationX, camera.up);  //Quaternion.Euler(_rotationX, _rotationY, 0f);
         }
     }
 

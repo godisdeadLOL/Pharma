@@ -5,6 +5,8 @@ using UnityEngine;
 public class SinkController : MonoBehaviour
 {
     [SerializeField] private Interactable _vavle;
+    [SerializeField] private ParticleSystem _waterParticle;
+
     [SerializeField] private GameObject LeftArm;
     [SerializeField] private GameObject RightArm;
 
@@ -35,6 +37,9 @@ public class SinkController : MonoBehaviour
             timer = 0;
             LeftArm.SetActive(false);
             RightArm.SetActive(false);
+
+            var emmision = _waterParticle.emission;
+            emmision.enabled = false;
         }
 
     }
@@ -59,5 +64,9 @@ public class SinkController : MonoBehaviour
         shouldMove = true;
         LeftArm.SetActive(true);
         RightArm.SetActive(true);
+
+        _waterParticle.Play();
+        var emmision = _waterParticle.emission;
+        emmision.enabled = true;
     }
 }

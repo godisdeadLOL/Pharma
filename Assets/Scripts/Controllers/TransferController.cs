@@ -82,7 +82,7 @@ public class TransferController : MonoBehaviour
     {
         if (Target != null)
         {
-            Target.transform.rotation = Quaternion.identity;
+            Source.transform.rotation = Quaternion.identity;
 
             Target = null;
             Source = null;

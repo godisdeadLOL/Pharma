@@ -79,7 +79,7 @@ public class MovementController : MonoBehaviour
         CameraManager._inst.CurrentPivot = next.Pivot;
         StateManager._inst.ChangeState(next.State);
 
-        CameraManager._inst.InteractionDistance = next.InteractionDistance;
+        InteractionManager.Inst.InteractionDistance = next.InteractionDistance;
 
         next.OnEnter.Invoke();
     }
