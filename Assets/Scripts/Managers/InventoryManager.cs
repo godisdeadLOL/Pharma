@@ -4,13 +4,17 @@ using UnityEngine;
 
 public class InventoryManager : MonoBehaviour
 {
-    public static InventoryManager main { get; private set; }
+    public static InventoryManager Inst { get; private set; }
 
-    [SerializeField]
-    private Transform[] _itemBoxes;
+    [SerializeField] private Transform[] _itemBoxes;
+
+    private TableController _tableController;
+
+
     void Awake()
     {
-        main = this;
+        Inst = this;
+        _tableController = StateManager._inst.GetState<TableController>();
     }
 
     private Transform GetEmptyBox()
@@ -42,27 +46,22 @@ public class InventoryManager : MonoBehaviour
         pickable.transform.localPosition = Vector3.zero;
     }
 
-    public void Drop(int slot, Vector2 mousePosition)
+    public void Drop(int slot)
     {
-        float interactionDistance = CameraManager._inst.InteractionDistance;
+        // float interactionDistance = CameraManager._inst.InteractionDistance;
 
         if (_itemBoxes[slot].childCount == 0) return;
 
-        Ray ray = Camera.main.ScreenPointToRay(mousePosition);
-        if (!Physics.Raycast(ray, out RaycastHit hit, interactionDistance)) return;
+        // Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        // if (!Physics.Raycast(ray, out RaycastHit hit, interactionDistance)) return;
 
-        Vector3 target = hit.point;// + Vector3.up * 0.2f;
+        // Vector3 target = hit.point;
 
         GameObject pickable = _itemBoxes[slot].GetChild(0).gameObject;
-        // var rb = pickable.GetComponent<Rigidbody>();
-
-        // if (rb != null)
-        // {
-        //     rb.isKinematic = false;
-        //     rb.interpolation = RigidbodyInterpolation.Interpolate;
-        // }
 
         pickable.transform.SetParent(null, false);
-        pickable.transform.position = target;
+        pickable.transform.position = _tableController.TargetPosition;
+
+        if (_tableController.TargetAnchor != null) _tableController.TargetAnchor.gameObject.SetActive(false);
     }
 }

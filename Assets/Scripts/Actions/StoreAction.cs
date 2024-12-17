@@ -8,6 +8,6 @@ public class StoreAction : Action
 
     public override void Activate(GameObject pickable)
     {
-        InventoryManager.main.Store(pickable);
+        InventoryManager.Inst.Store(pickable);
     }
 }

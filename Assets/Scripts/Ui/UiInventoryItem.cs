@@ -24,6 +24,6 @@ public class UiInventoryItem : MonoBehaviour, IBeginDragHandler, IDragHandler, I
     {
         transform.localPosition = Vector3.zero;
 
-        InventoryManager.main.Drop(_slot, Input.mousePosition);
+        InventoryManager.Inst.Drop(_slot);
     }
 }

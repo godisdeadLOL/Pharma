@@ -9,7 +9,7 @@ public class ExamineAction : Action
     public override void Activate(GameObject pickable)
     {
         var examineController = StateManager._inst.GetState<ExamineController>();
-        examineController.pickable = pickable;
+        examineController.Target = pickable.transform;
 
         StateManager._inst.ChangeState<ExamineController>();
     }

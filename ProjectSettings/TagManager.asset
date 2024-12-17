@@ -23,7 +23,7 @@ TagManager:
   - 
   - PickableCollider
   - Surface
-  - 
+  - Anchor
   - 
   - 
   - Weighter
