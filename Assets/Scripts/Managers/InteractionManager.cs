@@ -15,6 +15,11 @@ public class InteractionManager : MonoBehaviour
     public UnityAction<Interactable> OnInteractablePushed;
     public UnityAction<Interactable> OnInteractableCleared;
 
+    public UnityAction OnAllBlocked;
+    public UnityAction OnAllUnblocked;
+    public UnityAction<Interactable> OnUnblockedDirect;
+    public UnityAction<string> OnUnblockedFilter;
+
     [field: SerializeField] public float InteractionDistance { get; set; } = 1f;
     [field: SerializeField] public bool BlockPrimary { get; set; } = false;
     [field: SerializeField] public bool BlockSecondary { get; set; } = false;
@@ -33,8 +38,8 @@ public class InteractionManager : MonoBehaviour
     //     }
     // }
 
-    private List<Interactable> _interactables = new();
-    private List<InteractionLayer> _layers = new();
+    [SerializeField] private List<Interactable> _interactables = new();
+    [SerializeField] private List<InteractionLayer> _layers = new();
 
 
     // private bool _blockHover = false;
@@ -72,7 +77,7 @@ public class InteractionManager : MonoBehaviour
 
         // OnInteract
 
-        if (_hovered != null)
+        if (_hovered != null && !_hovered.IsBlocked)
         {
 
             if (!BlockPrimary && InputHandler.GetMouseButtonDown(0))
@@ -156,6 +161,26 @@ public class InteractionManager : MonoBehaviour
             OnLayerCleared?.Invoke(layer);
         }
         _layers.Clear();
+    }
+
+    public void BlockAll()
+    {
+        OnAllBlocked?.Invoke();
+    }
+
+    public void UnblockAll()
+    {
+        OnAllUnblocked?.Invoke();
+    }
+
+    public void Unblock(Interactable interactable)
+    {
+        OnUnblockedDirect?.Invoke(interactable);
+    }
+
+    public void UnblockByFilter(string filter)
+    {
+        OnUnblockedFilter?.Invoke(filter);
     }
 
     // public void Register(Interactable interactable)

@@ -6,8 +6,9 @@ using UnityEngine;
 
 public class Dressing : MonoBehaviour
 {
-    public float speed = 1;
+    public float speed = 100;
     public GameObject PointEnd;
+    public GameObject PointTop;
     public GameObject PointStart;
     public GameObject Dress;
     int motion = 0;
@@ -24,21 +25,40 @@ public class Dressing : MonoBehaviour
         float step = speed * Time.deltaTime;
         Transform end = PointEnd.transform;
         Transform start = PointStart.transform;
-        
+        Transform top = PointTop.transform;
+               
         
         if (motion == 1)
         {
-            transform.position = Vector3.MoveTowards(transform.position, end.transform.position, step);
+            transform.position = Vector3.MoveTowards(transform.position, top.transform.position, step);
             
+        }
+        if (transform.position == top.transform.position)
+        {
+            motion = 2;
+            
+
+        }
+        if (motion == 2)
+        {
+            transform.position = Vector3.MoveTowards(transform.position, end.transform.position, step);
         }
         if(transform.position == end.transform.position )
         {
-            motion = 2;
+            motion = 3;
             Dress.SetActive(false);
             
         }
-        if (motion == 2)
+        if (motion == 3)
         { 
+            transform.position = Vector3.MoveTowards(transform.position, top.transform.position, step);
+        }
+        if (motion ==3 && transform.position == top.transform.position)
+        {
+            motion = 4;
+        }
+        if (motion == 4)
+        {
             transform.position = Vector3.MoveTowards(transform.position, start.transform.position, step);
         }
         

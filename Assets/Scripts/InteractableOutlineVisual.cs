@@ -23,7 +23,7 @@ public class InteractableOutlineVisual : MonoBehaviour
         _outline.enabled = false;
 
         _startWidth = _outline.OutlineWidth;
-        _startColor = _outline.OutlineColor;
+        _startColor = Color.white; //_outline.OutlineColor;
 
         _interactable = GetComponent<Interactable>();
         if (_interactable == null) _interactable = GetComponentInParent<Interactable>();
@@ -31,13 +31,16 @@ public class InteractableOutlineVisual : MonoBehaviour
         _interactable.OnInteractionEnabled += InteractionEnabled; // () => { _outline.enabled = true; HoverExit(); };
         _interactable.OnInteractionDisabled += InteractionDisabled; // () => { _outline.enabled = false; print("disable"); };
 
+        _interactable.OnInteractionBlocked += () => { _startColor = Color.red; if (_interactable.CanInteract) HoverExit(); };
+        _interactable.OnInteractionUnblocked += () => { _startColor = Color.white; if (_interactable.CanInteract) HoverExit(); };
+
         // interactable.OnHoverEnter += HoverEnter;  // () => { _hovered = true; _outline.enabled = true; };
         // interactable.OnHoverExit += HoverExit; //() => _hovered = false;
     }
 
     private void InteractionEnabled()
     {
-        _outline.enabled = true; 
+        _outline.enabled = true;
         HoverExit();
 
         _interactable.OnHoverEnter += HoverEnter;

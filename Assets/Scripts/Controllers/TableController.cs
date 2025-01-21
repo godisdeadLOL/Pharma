@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 
@@ -17,7 +18,7 @@ public class TableController : MonoBehaviour
 
     private Transform GetCurrentAnchor(Ray ray, bool active = true)
     {
-        if(Anchors == null) return null;
+        if (Anchors == null) return null;
 
         Transform closest = null;
         float curDist = float.PositiveInfinity;
@@ -57,25 +58,34 @@ public class TableController : MonoBehaviour
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         float interactionDistance = InteractionManager.Inst.InteractionDistance;
 
-        if (Anchors != null)
-        {
-            Transform anchor = GetCurrentAnchor(ray);
+        // if (Anchors != null)
+        // {
+        //     Transform anchor = GetCurrentAnchor(ray);
 
-            _realTargetPosition = anchor.position;
-            TargetPosition = anchor.position;
-            TargetAnchor = anchor;
-        }
-        else if (Physics.Raycast(ray, out RaycastHit hit, interactionDistance, _tableMask))
+        //     _realTargetPosition = anchor.position;
+        //     TargetPosition = anchor.position;
+        //     TargetAnchor = anchor;
+        // }
+        if (Physics.Raycast(ray, out RaycastHit hit, interactionDistance, _tableMask))
         {
             _realTargetPosition = hit.point;
-
+            TargetPosition = hit.point;
 
             float radius = _pickable ? (_pickable.Collider.radius * _pickable.Collider.transform.localScale.x) : 0.1f;
 
             Collider[] buffer = new Collider[1];
-            if (Physics.OverlapSphereNonAlloc(hit.point, radius, buffer, _pickableColliderMask) == 0)
+            if (Physics.OverlapSphereNonAlloc(hit.point, radius, buffer, _pickableColliderMask) > 0)
             {
-                TargetPosition = hit.point;
+                SphereCollider collider = (SphereCollider)buffer[0];
+                float collideRadius = (collider.radius * collider.transform.localScale.x);
+
+                Vector3 dir = TargetPosition - collider.transform.position;
+                dir.y = 0f;
+                float dist = dir.magnitude;
+                dir /= dist;
+
+                float offset = -Math.Min(0f, dist - collideRadius - radius);
+                TargetPosition += dir * offset;
             }
         }
 
@@ -84,9 +94,15 @@ public class TableController : MonoBehaviour
         //
         _pickable.transform.position = Lerping.Lerp(
             _pickable.transform.position,
-            Vector3.Lerp(TargetPosition, _realTargetPosition, 0.1f) + Vector3.up * _elevation,
+            TargetPosition + Vector3.up * _elevation,
             Lerping.Smooth.Fast
         );
+
+        // _pickable.transform.position = Lerping.Lerp(
+        //     _pickable.transform.position,
+        //     Vector3.Lerp(TargetPosition, _realTargetPosition, 0.1f) + Vector3.up * _elevation,
+        //     Lerping.Smooth.Fast
+        // );
 
         //
         if (InputHandler.GetMouseButtonDown(1)) Drop();
@@ -110,6 +126,8 @@ public class TableController : MonoBehaviour
 
         Anchors = null;
         TargetAnchor = null;
+
+        // if(_pickable != null) Drop();
     }
 
     private void OnInteractPrimary(Interactable interactable)
@@ -146,7 +164,7 @@ public class TableController : MonoBehaviour
 
 
         Transform anchor = GetCurrentAnchor(Camera.main.ScreenPointToRay(Input.mousePosition), false);
-        if(anchor != null) anchor.gameObject.SetActive(true);
+        if (anchor != null) anchor.gameObject.SetActive(true);
     }
 
     private void Drop()

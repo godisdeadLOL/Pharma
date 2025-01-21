@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 [System.Serializable]
 public class ContainerSolution
@@ -24,6 +25,8 @@ public class ContainerSolution
 
 public class Container : MonoBehaviour
 {
+    public UnityAction<int> OnAmountChanged;
+
     public List<ContainerSolution> solutions = new();
 
     public int volume;
@@ -39,6 +42,8 @@ public class Container : MonoBehaviour
 
     public void AddSolution(ContainerSolution added)
     {
+        OnAmountChanged?.Invoke(added.amount);
+
         foreach (var solution in solutions)
         {
             if (solution.ingredientData == added.ingredientData)
@@ -53,6 +58,8 @@ public class Container : MonoBehaviour
 
     public void Transfer(Container target, int amount)
     {
+        OnAmountChanged?.Invoke(-amount);
+
         // todo: оптимизировать
 
         while (amount > 0 && solutions.Count > 0)

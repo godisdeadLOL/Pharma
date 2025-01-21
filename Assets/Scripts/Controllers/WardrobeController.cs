@@ -8,6 +8,7 @@ public class WardrobeController : MonoBehaviour
 
     [SerializeField] private float speed = 1;
     [SerializeField] private GameObject PointEnd;
+    [SerializeField] private GameObject PointTop;
     [SerializeField] private GameObject PointStart;
     [SerializeField] private GameObject Dress;
     int motion = 0;
@@ -17,20 +18,39 @@ public class WardrobeController : MonoBehaviour
         float step = speed * Time.deltaTime;
         Transform end = PointEnd.transform;
         Transform start = PointStart.transform;
-
-
+        Transform top = PointTop.transform;
+               
+        
         if (motion == 1)
         {
-            _rag.transform.position = Vector3.MoveTowards(_rag.transform.position, end.transform.position, step);
-
+            _rag.transform.position = Vector3.MoveTowards(_rag.transform.position, top.transform.position, step);
+            
         }
-        if (_rag.transform.position == end.transform.position)
+        if (_rag.transform.position == top.transform.position)
         {
             motion = 2;
-            Dress.SetActive(!Dress.activeSelf);
+            
 
         }
         if (motion == 2)
+        {
+            _rag.transform.position = Vector3.MoveTowards(_rag.transform.position, end.transform.position, step);
+        }
+        if(_rag.transform.position == end.transform.position )
+        {
+            motion = 3;
+            Dress.SetActive(!Dress.activeSelf);
+            
+        }
+        if (motion == 3)
+        { 
+            _rag.transform.position = Vector3.MoveTowards(_rag.transform.position, top.transform.position, step);
+        }
+        if (motion ==3 && _rag.transform.position == top.transform.position)
+        {
+            motion = 4;
+        }
+        if (motion == 4)
         {
             _rag.transform.position = Vector3.MoveTowards(_rag.transform.position, start.transform.position, step);
         }

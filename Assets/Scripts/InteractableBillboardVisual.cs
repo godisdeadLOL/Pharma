@@ -10,13 +10,23 @@ public class InteractableBillboardVisual : MonoBehaviour
 
     private bool _hovered = false;
 
-    void Start()
+    void Awake()
     {
-        _startScale = transform.localScale;
-
         var interactable = GetComponentInParent<Interactable>();
         interactable.OnHoverEnter += () => _hovered = true;
         interactable.OnHoverExit += () => _hovered = false;
+
+        var sprite = GetComponent<SpriteRenderer>();
+        interactable.OnInteractionBlocked += () => sprite.color = Color.red;
+        interactable.OnInteractionUnblocked += () => sprite.color = Color.white;
+
+        interactable.OnInteractionDisabled += () => gameObject.SetActive(false);
+        interactable.OnInteractionEnabled += () => gameObject.SetActive(true);
+    }
+
+    void Start()
+    {
+        _startScale = transform.localScale;
     }
 
     void Update()
