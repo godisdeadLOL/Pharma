@@ -23,6 +23,9 @@ public class CabientAnchorsGenerator : MonoBehaviour
                 anchor.transform.parent = transform;
                 anchor.transform.position = Vector3.Lerp(fromAnchor.position, toAnchor.position, t);
             }
+
+            // Destroy(fromAnchor.gameObject);
+            // Destroy(toAnchor.gameObject);
         }
 
         Destroy(this);

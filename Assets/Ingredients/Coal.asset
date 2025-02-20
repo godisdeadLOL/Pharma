@@ -14,4 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   name: "\u0423\u0433\u043E\u043B\u044C"
   density: 0.02
-  color: {r: 0.2235294, g: 1, b: 0.29337484, a: 0}
+  color: {r: 0, g: 0, b: 0, a: 0}

@@ -8,17 +8,18 @@ public class ContainerSolution
 {
     public IngredientData ingredientData;
 
-    public int amount;
+    public int Amount;
+    // public float Grind; 
 
     public float GetMass()
     {
-        return ingredientData.density * amount;
+        return ingredientData.density * Amount;
     }
 
     public ContainerSolution(IngredientData ingredientData, int amount)
     {
         this.ingredientData = ingredientData;
-        this.amount = amount;
+        this.Amount = amount;
     }
 }
 
@@ -26,8 +27,16 @@ public class ContainerSolution
 public class Container : MonoBehaviour
 {
     public UnityAction<int> OnAmountChanged;
+    public UnityAction<ContainerSolution> OnSolutionAdded;
 
     public List<ContainerSolution> solutions = new();
+
+    public Color ColorOverride { get; set; }
+    public float ColorOverrideLerp { get; set; }
+
+    [field: SerializeField] public bool ApplyFilter { get; set; } = false;
+    [field: SerializeField] public IngredientData Filter { get; set; } = null;
+
 
     public int volume;
 
@@ -42,13 +51,14 @@ public class Container : MonoBehaviour
 
     public void AddSolution(ContainerSolution added)
     {
-        OnAmountChanged?.Invoke(added.amount);
+        OnAmountChanged?.Invoke(added.Amount);
+        OnSolutionAdded?.Invoke(added);
 
         foreach (var solution in solutions)
         {
             if (solution.ingredientData == added.ingredientData)
             {
-                solution.amount += added.amount;
+                solution.Amount += added.Amount;
                 return;
             }
         }
@@ -58,9 +68,12 @@ public class Container : MonoBehaviour
 
     public void Transfer(Container target, int amount)
     {
-        OnAmountChanged?.Invoke(-amount);
+        if (target.ApplyFilter && solutions.Count > 0)
+        {
+            if(target.Filter != solutions[0].ingredientData) return; // допустим в емкости только один ингредиент
+        }
 
-        // todo: оптимизировать
+        OnAmountChanged?.Invoke(-amount);
 
         while (amount > 0 && solutions.Count > 0)
         {
@@ -70,7 +83,7 @@ public class Container : MonoBehaviour
                 int n = (_transferOffset + i) % solutions.Count;
                 ContainerSolution solution = solutions[n];
 
-                solution.amount -= 1;
+                solution.Amount -= 1;
                 target.AddSolution(new ContainerSolution(solution.ingredientData, 1));
 
                 amount--;
@@ -83,7 +96,7 @@ public class Container : MonoBehaviour
             for (int i = solutions.Count - 1; i >= 0; i--)
             {
                 ContainerSolution solution = solutions[i];
-                if (solution.amount == 0) solutions.RemoveAt(i);
+                if (solution.Amount == 0) solutions.RemoveAt(i);
             }
         }
     }
@@ -106,9 +119,27 @@ public class Container : MonoBehaviour
 
         foreach (var solution in solutions)
         {
-            total += solution.amount;
+            total += solution.Amount;
         }
 
         return total;
+    }
+
+    public Color GetColor()
+    {
+        float total = GetAmount();
+        Color color = Color.black;
+
+        foreach (var solution in solutions)
+        {
+            color += solution.ingredientData.color * solution.Amount / total;
+        }
+
+        return Color.Lerp(color, ColorOverride, ColorOverrideLerp);
+    }
+
+    public void ForceUpdateColor()
+    {
+        OnAmountChanged?.Invoke(0);
     }
 }

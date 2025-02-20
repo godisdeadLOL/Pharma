@@ -1,29 +1,40 @@
+using Unity.VisualScripting;
 using UnityEngine;
 
-[RequireComponent(typeof(Outline))]
+// [RequireComponent(typeof(Outline))]
 public class InteractableOutlineVisual : MonoBehaviour
 {
-    [SerializeField] private float _hoverWidth = 7f;
-    [SerializeField] private Color _hoverColor = Color.white;
+    // [SerializeField] private float _hoverWidth = 7f;
+    // [SerializeField] private Color _hoverColor = Color.white;
+
+    [SerializeField] private bool _highlighted = false;
 
     private Outline _outline;
+    private Interactable _interactable;
 
-    private float _startWidth;
-    private Color _startColor;
+    // private float _startWidth;
+    // private Color _startColor;
+
+    private float _startWidth = 4f;
+    private float _hoverWidth = 8f;
+    private Color _startColor = Color.white;
+    private Color _hoverColor = Color.white;
+    private Color _disabledColor = Color.red;
 
 
     private bool _hovered = false;
-
-    private Interactable _interactable;
+    private bool _blocked = false;
 
     void Awake()
     {
-        _outline = GetComponent<Outline>();
+        // _outline = GetComponent<Outline>();
 
-        _outline.enabled = false;
+        _outline = gameObject.GetOrAddComponent<Outline>();
 
-        _startWidth = _outline.OutlineWidth;
-        _startColor = Color.white; //_outline.OutlineColor;
+        _outline.OutlineWidth = _startWidth;
+        _outline.OutlineColor = _startColor;
+
+        if (!_highlighted) _outline.enabled = false;
 
         _interactable = GetComponent<Interactable>();
         if (_interactable == null) _interactable = GetComponentInParent<Interactable>();
@@ -31,11 +42,11 @@ public class InteractableOutlineVisual : MonoBehaviour
         _interactable.OnInteractionEnabled += InteractionEnabled; // () => { _outline.enabled = true; HoverExit(); };
         _interactable.OnInteractionDisabled += InteractionDisabled; // () => { _outline.enabled = false; print("disable"); };
 
-        _interactable.OnInteractionBlocked += () => { _startColor = Color.red; if (_interactable.CanInteract) HoverExit(); };
-        _interactable.OnInteractionUnblocked += () => { _startColor = Color.white; if (_interactable.CanInteract) HoverExit(); };
+        _interactable.OnInteractionBlocked += () => { _startColor = _disabledColor; _blocked = true; if (_interactable.CanInteract) HoverExit(); };
+        _interactable.OnInteractionUnblocked += () => { _startColor = _hoverColor; _blocked = false; if (_interactable.CanInteract) HoverExit(); };
 
-        // interactable.OnHoverEnter += HoverEnter;  // () => { _hovered = true; _outline.enabled = true; };
-        // interactable.OnHoverExit += HoverExit; //() => _hovered = false;
+        _interactable.OnHoverEnter += HoverEnter;  // () => { _hovered = true; _outline.enabled = true; };
+        _interactable.OnHoverExit += HoverExit; //() => _hovered = false;
     }
 
     private void InteractionEnabled()
@@ -43,15 +54,15 @@ public class InteractableOutlineVisual : MonoBehaviour
         _outline.enabled = true;
         HoverExit();
 
-        _interactable.OnHoverEnter += HoverEnter;
-        _interactable.OnHoverExit += HoverExit;
+        // _interactable.OnHoverEnter += HoverEnter;
+        // _interactable.OnHoverExit += HoverExit;
     }
     private void InteractionDisabled()
     {
-        _outline.enabled = false;
+        _outline.enabled = _highlighted;
 
-        _interactable.OnHoverEnter -= HoverEnter;
-        _interactable.OnHoverExit -= HoverExit;
+        // _interactable.OnHoverEnter -= HoverEnter;
+        // _interactable.OnHoverExit -= HoverExit;
     }
 
     private void HoverEnter()
@@ -59,7 +70,7 @@ public class InteractableOutlineVisual : MonoBehaviour
         _hovered = true;
 
         _outline.OutlineWidth = _hoverWidth;
-        _outline.OutlineColor = _hoverColor;
+        _outline.OutlineColor = _blocked ? _disabledColor : _hoverColor;
 
         _outline.enabled = true;
     }
@@ -71,7 +82,7 @@ public class InteractableOutlineVisual : MonoBehaviour
         _outline.OutlineWidth = _startWidth;
         _outline.OutlineColor = _startColor;
 
-        _outline.enabled = !Mathf.Approximately(_outline.OutlineColor.a, 0f);
+        _outline.enabled = _highlighted;
     }
 
     // void Update()

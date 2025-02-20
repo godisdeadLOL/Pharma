@@ -27,12 +27,15 @@ public class ContainerContentVisualizer : MonoBehaviour
     private float _amount, _pour;
 
     private Container _container;
+    private Renderer _contentRenderer;
 
     void Awake()
     {
         _container = GetComponent<Container>();
 
         _container.OnAmountChanged += AmountChanged;
+
+        _contentRenderer = _content.GetComponentInChildren<Renderer>();
     }
 
     void Update()
@@ -51,7 +54,7 @@ public class ContainerContentVisualizer : MonoBehaviour
         }
         else _content.gameObject.SetActive(true);
 
-        float amount = Mathf.Clamp01(_amount- _pour*_pourToElevation);
+        float amount = Mathf.Clamp01(_amount - _pour * _pourToElevation);
 
         float baseScale = Mathf.Lerp(_bottomScale, _topScale, amount);
         float scale = _radiusCurve.Evaluate(amount);
@@ -67,7 +70,17 @@ public class ContainerContentVisualizer : MonoBehaviour
     {
         _pour += delta * _deltaToPour;
 
-        if(_pour < 0) _pour = 0;
+        if (_pour < 0) _pour = 0;
+
+        UpdateColor();
+    }
+
+    private void UpdateColor()
+    {
+        var propertyBlock = new MaterialPropertyBlock();
+        propertyBlock.SetColor("_Color", _container.GetColor());
+
+        _contentRenderer.SetPropertyBlock(propertyBlock);
     }
 
     void OnDrawGizmosSelected()

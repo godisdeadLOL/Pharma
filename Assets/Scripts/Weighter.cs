@@ -12,11 +12,13 @@ public class Weighter : MonoBehaviour
 
     private bool _on = false;
 
-    private GameObject _weighterTrigger;
+    // private GameObject _weighterTrigger;
+    private Surface _surface;
 
     void Awake()
     {
-        _weighterTrigger = transform.Find("WeighterTrigger").gameObject;
+        // _weighterTrigger = transform.Find("WeighterTrigger").gameObject;
+        _surface = GetComponentInChildren<Surface>();
     }
 
     void Start()
@@ -27,22 +29,31 @@ public class Weighter : MonoBehaviour
         Toggle();
     }
 
-    void FixedUpdate()
-    {
-        _total = 0f;
-    }
+    // void FixedUpdate()
+    // {
+    //     _total = 0f;
+    // }
 
-    void OnTriggerStay(Collider collider)
-    {
-        GameObject gameObject = collider.attachedRigidbody.gameObject;
+    // void OnTriggerStay(Collider collider)
+    // {
+    //     GameObject gameObject = collider.attachedRigidbody.gameObject;
 
-        if (gameObject.TryGetComponent<Pickable>(out var pickable))
-            _total += CalculatePickableMass(pickable);
-    }
+    //     if (gameObject.TryGetComponent<Pickable>(out var pickable))
+    //         _total += CalculatePickableMass(pickable);
+    // }
 
     void Update()
     {
-        if (_on) UpdateDisplay();
+        if (!_on) return;
+
+        _total = 0f;
+
+        foreach (var pickable in _surface.GetComponentsInChildren<Pickable>())
+        {
+            _total += CalculatePickableMass(pickable);
+        }
+
+        UpdateDisplay();
     }
 
     private float CalculatePickableMass(Pickable pickable)
@@ -73,6 +84,6 @@ public class Weighter : MonoBehaviour
         _on = !_on;
 
         _text.gameObject.SetActive(_on);
-        _weighterTrigger.SetActive(_on);
+        // _weighterTrigger.SetActive(_on);
     }
 }

@@ -11,16 +11,16 @@ public class UiTaskHint : MonoBehaviour
     private void Awake()
     {
         _text = GetComponent<TMP_Text>();
-        _taskManager.OnTaskChanged += TaskChanged;
+        _taskManager.OnPopupChanged += OnPopupChanged;
     }
 
-    private void TaskChanged(Task task)
+    private void OnPopupChanged(string popup)
     {
-        if(task == null) {
-            _text.text = "";
-            return;
-        }
+        // if(task == null) {
+        //     _text.text = "";
+        //     return;
+        // }
 
-        _text.text = task.Hint;
+        _text.text = popup;
     }
 }

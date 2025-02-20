@@ -41,6 +41,20 @@ public class Interactable : MonoBehaviour
         InteractionManager.Inst.OnUnblockedFilter += UnblockedFilter;
     }
 
+    void OnDestroy()
+    {
+        InteractionManager.Inst.OnLayerPushed -= LayerPushed;
+        InteractionManager.Inst.OnLayerCleared -= LayerCleared;
+
+        InteractionManager.Inst.OnInteractablePushed -= InteractablePushed;
+        InteractionManager.Inst.OnInteractableCleared -= InteractableCleared;
+
+        InteractionManager.Inst.OnAllBlocked -= AllBlocked;
+        InteractionManager.Inst.OnAllUnblocked -= AllUnblocked;
+        InteractionManager.Inst.OnUnblockedDirect -= Unblocked;
+        InteractionManager.Inst.OnUnblockedFilter -= UnblockedFilter;
+    }
+
     private void LayerPushed(InteractionLayer layer)
     {
         if (!CanInteract && layer == Layer && layer != InteractionLayer.None)
@@ -107,6 +121,24 @@ public class Interactable : MonoBehaviour
     private void UnblockedFilter(string filter)
     {
         if (gameObject.name.ToLower().Contains(filter.ToLower()) && IsBlocked)
+        {
+            IsBlocked = false;
+            OnInteractionUnblocked?.Invoke();
+        }
+    }
+
+    public void Block()
+    {
+        if(!IsBlocked)
+        {
+            IsBlocked = true;
+            OnInteractionBlocked?.Invoke();
+        }
+    }
+
+    public void Unblock()
+    {
+        if(IsBlocked)
         {
             IsBlocked = false;
             OnInteractionUnblocked?.Invoke();

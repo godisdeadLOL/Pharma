@@ -80,7 +80,7 @@ public class TransferController : MonoBehaviour
 
     void OnDisable()
     {
-        if (Target != null)
+        if (Target != null || Source != null)
         {
             Source.transform.rotation = Quaternion.identity;
 

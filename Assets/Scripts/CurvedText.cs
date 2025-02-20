@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
-[ExecuteInEditMode]
+// [ExecuteInEditMode]
 public class CurvedText : MonoBehaviour
 {
     [SerializeField] private float _radius = 1f;
-    [SerializeField] private float _halfArc = 60f;
-    [SerializeField] private float _halfWidth = 1f;
+    // [SerializeField] private float _halfArc = 60f;
+    // [SerializeField] private float _halfWidth = 1f;
 
     private TMP_Text _text;
 
@@ -22,6 +22,7 @@ public class CurvedText : MonoBehaviour
     void Start()
     {
         Redraw();
+        // Destroy(this);
     }
 
     void Update()
@@ -29,7 +30,7 @@ public class CurvedText : MonoBehaviour
         if (Application.platform == RuntimePlatform.WindowsEditor) Redraw();
     }
 
-    private void Redraw()
+    public void Redraw()
     {
         _text.ForceMeshUpdate();
 
@@ -58,21 +59,28 @@ public class CurvedText : MonoBehaviour
 
     private Vector3 RemapVertex(Vector3 vert)
     {
-        float t = vert.x / _halfWidth;
-        float angle = (_halfArc * t + _angleOffset) * Mathf.Deg2Rad;
+        float scale = transform.localScale.x;
+        if (Mathf.Approximately(scale, 0f)) scale = 1f;
 
-        return new Vector3(Mathf.Cos(angle) * _radius, vert.y, Mathf.Sin(angle) * _radius);
+        float width = _text.rectTransform.sizeDelta.x * scale;
+
+        float arc = width / (2f * Mathf.PI * _radius) * 360f;
+
+        float t = scale * vert.x / width;
+        float angle = (arc * t + _angleOffset) * Mathf.Deg2Rad;
+
+        return new Vector3(Mathf.Cos(angle) * _radius / scale, vert.y, Mathf.Sin(angle) * _radius / scale);
     }
 
-    void OnDrawGizmos()
-    {
-        Gizmos.color = Color.red;
-        Gizmos.matrix = transform.localToWorldMatrix;
+    // void OnDrawGizmos()
+    // {
+    //     Gizmos.color = Color.red;
+    //     Gizmos.matrix = transform.localToWorldMatrix;
 
-        float angleFrom = (-_halfArc + _angleOffset) * Mathf.Deg2Rad;
-        float angleTo = (_halfArc + _angleOffset) * Mathf.Deg2Rad;
+    //     float angleFrom = (-_halfArc + _angleOffset) * Mathf.Deg2Rad;
+    //     float angleTo = (_halfArc + _angleOffset) * Mathf.Deg2Rad;
 
-        Gizmos.DrawWireSphere(new Vector3(Mathf.Cos(angleFrom), 0f, Mathf.Sin(angleFrom)) * _radius, 0.1f);
-        Gizmos.DrawWireSphere(new Vector3(Mathf.Cos(angleTo), 0f, Mathf.Sin(angleTo)) * _radius, 0.1f);
-    }
+    //     Gizmos.DrawWireSphere(new Vector3(Mathf.Cos(angleFrom), 0f, Mathf.Sin(angleFrom)) * _radius, 0.1f);
+    //     Gizmos.DrawWireSphere(new Vector3(Mathf.Cos(angleTo), 0f, Mathf.Sin(angleTo)) * _radius, 0.1f);
+    // }
 }

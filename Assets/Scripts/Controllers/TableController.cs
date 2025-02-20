@@ -8,13 +8,19 @@ public class TableController : MonoBehaviour
 
     [SerializeField] private float _elevation = 0.1f;
 
-    private LayerMask _interactableMask, _pickableColliderMask, _tableMask;
+    private LayerMask _interactableMask, _pickableColliderMask, _surfaceMask;
 
     public Vector3 TargetPosition { get; private set; }
     public Transform TargetAnchor { get; private set; }
 
     private Pickable _pickable;
     private Vector3 _realTargetPosition;
+    private float _currentElevation;
+
+    private Pickable _pickableReleased;
+    private Vector3 _releaseTarget;
+
+
 
     private Transform GetCurrentAnchor(Ray ray, bool active = true)
     {
@@ -43,7 +49,7 @@ public class TableController : MonoBehaviour
     {
         _interactableMask = LayerMask.GetMask("Pickable", "Button", "Extra");
         _pickableColliderMask = LayerMask.GetMask("PickableCollider");
-        _tableMask = LayerMask.GetMask("Surface");
+        _surfaceMask = LayerMask.GetMask("Surface");
     }
 
     void Update()
@@ -54,58 +60,93 @@ public class TableController : MonoBehaviour
             return;
         }
 
-        // 
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        float interactionDistance = InteractionManager.Inst.InteractionDistance;
-
-        // if (Anchors != null)
-        // {
-        //     Transform anchor = GetCurrentAnchor(ray);
-
-        //     _realTargetPosition = anchor.position;
-        //     TargetPosition = anchor.position;
-        //     TargetAnchor = anchor;
-        // }
-        if (Physics.Raycast(ray, out RaycastHit hit, interactionDistance, _tableMask))
+        // зафорсить конец анимации
+        if (Input.anyKeyDown)
         {
-            _realTargetPosition = hit.point;
-            TargetPosition = hit.point;
-
-            float radius = _pickable ? (_pickable.Collider.radius * _pickable.Collider.transform.localScale.x) : 0.1f;
-
-            Collider[] buffer = new Collider[1];
-            if (Physics.OverlapSphereNonAlloc(hit.point, radius, buffer, _pickableColliderMask) > 0)
+            if (_pickableReleased != null)
             {
-                SphereCollider collider = (SphereCollider)buffer[0];
-                float collideRadius = (collider.radius * collider.transform.localScale.x);
-
-                Vector3 dir = TargetPosition - collider.transform.position;
-                dir.y = 0f;
-                float dist = dir.magnitude;
-                dir /= dist;
-
-                float offset = -Math.Min(0f, dist - collideRadius - radius);
-                TargetPosition += dir * offset;
+                _pickableReleased.transform.position = _releaseTarget;
+                _pickableReleased = null;
             }
         }
 
+        // release
+        if (_pickableReleased != null)
+        {
+            _pickableReleased.transform.position = Lerping.Lerp(_pickableReleased.transform.position, _releaseTarget, Lerping.Smooth.Fast);
+        }
+
+
         if (_pickable == null) return;
 
-        //
         _pickable.transform.position = Lerping.Lerp(
             _pickable.transform.position,
-            TargetPosition + Vector3.up * _elevation,
+            _realTargetPosition + Vector3.up * _currentElevation,
             Lerping.Smooth.Fast
         );
 
-        // _pickable.transform.position = Lerping.Lerp(
-        //     _pickable.transform.position,
-        //     Vector3.Lerp(TargetPosition, _realTargetPosition, 0.1f) + Vector3.up * _elevation,
-        //     Lerping.Smooth.Fast
-        // );
 
-        //
         if (InputHandler.GetMouseButtonDown(1)) Drop();
+    }
+
+    void FixedUpdate()
+    {
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        float interactionDistance = InteractionManager.Inst.InteractionDistance;
+
+        _currentElevation = _elevation;
+
+        if (Anchors != null)
+        {
+            Transform anchor = GetCurrentAnchor(ray);
+
+            _realTargetPosition = anchor.position;
+            TargetPosition = anchor.position;
+            TargetAnchor = anchor;
+        }
+        else if (SurfaceManager.Instance.Raycast(ray, out var point, out var surface, maxDistance: interactionDistance))
+        {
+            // print($"{Time.time}: {point}");
+
+            _realTargetPosition = point;
+
+            float radius = _pickable ? _pickable.Radius : 0.05f;
+
+
+            TargetPosition = Vector3.MoveTowards(TargetPosition, _realTargetPosition, 10f * Time.fixedDeltaTime);
+
+
+            Collider[] buffer = new Collider[1];
+            if (Physics.OverlapSphereNonAlloc(point, radius, buffer, _pickableColliderMask) > 0)
+            {
+                Collider collider = buffer[0];
+                Pickable pickable = collider.transform.GetComponentInParent<Pickable>();
+
+                // if(_pickable != null && pickable.transform.IsChildOf(_pickable.transform)) return;
+
+
+
+                _currentElevation += pickable.Height / 2f;
+
+
+                Vector3 colliderCenter = collider.transform.position;
+                colliderCenter.y = 0f;
+
+                Vector3 pointCenter = TargetPosition;
+                pointCenter.y = 0f;
+
+                Vector3 dir = pointCenter - colliderCenter;
+                float offset = dir.magnitude;
+                dir.Normalize();
+
+                offset = Mathf.Max(0f, -offset + radius + pickable.Radius);
+                TargetPosition += dir * offset;
+            }
+            // else
+            // {
+            //     TargetPosition = point;
+            // }
+        }
     }
 
     void OnEnable()
@@ -124,7 +165,7 @@ public class TableController : MonoBehaviour
 
         InteractionManager.Inst.OnInteractPrimary -= OnInteractPrimary;
 
-        Anchors = null;
+        // Anchors = null;
         TargetAnchor = null;
 
         // if(_pickable != null) Drop();
@@ -134,7 +175,6 @@ public class TableController : MonoBehaviour
     {
         if (interactable.Layer == InteractionLayer.Pickable)
         {
-
             if (_pickable == null)
             {
                 Pickable pickable = interactable.GetComponent<Pickable>();
@@ -157,7 +197,8 @@ public class TableController : MonoBehaviour
     {
         _pickable = pickable;
         TargetPosition = pickable.transform.position;
-        pickable.OnPick?.Invoke();
+        // pickable.OnPick?.Invoke();
+        _pickable.Pick();
 
 
         InteractionManager.Inst.BlockSecondary = true;
@@ -169,12 +210,38 @@ public class TableController : MonoBehaviour
 
     private void Drop()
     {
-        _pickable.OnDrop?.Invoke();
-        _pickable.transform.position = TargetPosition;
+        if (SurfaceManager.Instance.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out var point, out var surface))
+        {
+            _pickable.SetSurface(surface);
+        }
+
+        _releaseTarget = TargetPosition;
+        _pickableReleased = _pickable;
+
+        // _pickable.OnDrop?.Invoke();
+        _pickable.Drop();
+        // _pickable.transform.position = TargetPosition;
         _pickable = null;
+
 
         InteractionManager.Inst.BlockSecondary = false;
 
         if (TargetAnchor != null) TargetAnchor.gameObject.SetActive(false);
+
+
+
+        // SurfaceManager.Instance.Raycast()
+    }
+
+    public void ResetAnchors()
+    {
+        Anchors = null;
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.green;
+
+        Gizmos.DrawWireSphere(TargetPosition, 0.05f);
     }
 }

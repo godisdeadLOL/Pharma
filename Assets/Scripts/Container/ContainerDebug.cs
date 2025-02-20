@@ -23,7 +23,7 @@ public class ContainerDebug : MonoBehaviour
 
         foreach (ContainerSolution solution in _container.solutions)
         {
-            text += $"{solution.ingredientData.name} - {solution.amount} u\n";
+            text += $"{solution.ingredientData.name} - {solution.Amount} u\n";
         }
 
         _text.text = text;
